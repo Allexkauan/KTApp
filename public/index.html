@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+
+    <link rel="stylesheet" href="styles.css">
+    <title>We Talk</title>
+</head>
+
+<body>
+    <form id="chat">
+        <input type="text" name="username" placeholder="Digite seu Usuário">
+        <input type="text" name="id" placeholder="Digite seu id">
+        <button id="btnConectar">Conectar</button>
+        <div class="messages"></div>
+        <input type="text" name="message" placeholder="Digite sua Mensagem">
+        <button type="submit">Enviar</button>
+    </form>
+
+    ￿
+    <script type="text/javascript">
+        $("#btnConectar").click(() => {
+            conectar();
+        });
+
+        function conectar() {
+            const cliente_id = window.location.hostname.split('.')[0];
+            const username = $('input[name=username]').val();
+            const user_id = $('input[name=id]').val();
+            var socket = io(`http://localhost:3000/?cliente=${cliente_id}&usuario=${username}&usuario_id=${user_id}`);
+            socket.on('previousMessage', function(message) {
+                for (message of messages) {
+                    renderMessage(message);
+                }
+            })
+
+            socket.on('receivedMessage', function(message) {
+                renderMessage(message);
+            });
+        }
+
+
+        //cliente_id =
+        //user_id = 4;
+        //username='adriana';
+
+        // (function() {
+        //     var offline = "offline";
+        //
+        //     if (offline in document)
+        //         document.addEventListener("visibilitychange", onchange);
+        //     else if ((offline = "mozHidden") in document)
+        //         document.addEventListener("mozvisibilitychange", onchange);
+        //     else if ((offline = "webkitHidden") in document)
+        //         document.addEventListener("webkitvisibilitychange", onchange);
+        //     else if ((offline = "msHidden") in document)
+        //         document.addEventListener("msvisibilitychange", onchange);
+        //
+        //     else if ("onfocusin" in document)
+        //         document.onfocusin = document.onfocusout = onchange;
+        //
+        //     else
+        //         window.onpageshow = window.onpagehide
+        //             = window.onfocus = window.onblur = onchange;
+        //
+        //     function onchange (evt) {
+        //         var v = "online", h = "offline",
+        //             evtMap = {
+        //                 focus:v, focusin:v, pageshow:v, blur:h, focusout:h, pagehide:h
+        //             };
+        //
+        //         evt = evt || window.event;
+        //         if (evt.type in evtMap)
+        //             console.log(evtMap[evt.type]);
+        //         else
+        //             console.log(this[offline] ? "offline" : "online");
+        //     }
+        //
+        //     if( document[offline] !== undefined )
+        //         onchange({type: document[offline] ? "blur" : "focus"});
+        // })();
+
+        function renderMessage(message) {
+            $('.messages').append('<div class="message"><strong￿>' + message.author + '</strong>: ' + message.message + ' </div>');
+        }
+
+
+
+        $('#chat').submit(function(event) {
+            event.preventDefault();
+
+            var author = $('input[name=username]').val();
+            var message = $('input[name=message]').val();
+
+            if (author.length && message.length) {
+                var messageObject = {
+                    author: author,
+                    message: message,
+                };
+
+                renderMessage(messageObject);
+
+                socket.emit('sendMessage', messageObject);
+            }
+        });
+    </script>
+</body>
+
+</html>
